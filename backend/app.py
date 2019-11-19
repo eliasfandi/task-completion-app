@@ -10,8 +10,7 @@ api = Api(app)
 
 dbParam = 'mysql+pymysql://root@localhost/taskr'
 app.config['SQLALCHEMY_DATABASE_URI'] = dbParam
-if __name__ == "__main__":
-    app.run(host='192.168.137.1')
+app.run(host='127.0.0.1', port=5000)
 #Flask secret key
 theKey = 'thEejrdaR5$wE3yY4wsehn4wASHR'
 
@@ -27,8 +26,10 @@ class Accounts(db.Model):
 
 class hello(Resource):
     def get(self):
-        return 'Bruh'
+        return 'live'
 api.add_resource(hello, '/')
+
+
 class UserSignUp(Resource):
     def put(self):
         #request.form("data")
