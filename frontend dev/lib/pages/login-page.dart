@@ -11,7 +11,7 @@ class _LoginPageState extends State<LoginPage> {
   String _status = 'no-action';
 
   final _formKey = GlobalKey<FormState>();
-
+String loginEmail, loginPassword;
   Widget build(BuildContext context) => new Scaffold(
         body: new Container(
           height: 800,
@@ -19,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+
               Container(
                 height: 65,
                 margin: EdgeInsets.fromLTRB(8, 4, 8, 4),
@@ -26,8 +27,19 @@ class _LoginPageState extends State<LoginPage> {
                   elevation: 5,
                   child: new Container(
                     padding: EdgeInsets.all(10),
-                    child: new TextField(
-                      decoration: InputDecoration(labelText: "username"),
+
+
+                    child: new TextFormField(
+                      decoration: InputDecoration(labelText: "email"),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Please enter an email';
+                        }
+                        return null;
+                      },
+                      onSaved: (String val) {
+                        loginEmail = val;
+                      },
                     ),
                   ),
                 ),
@@ -39,8 +51,17 @@ class _LoginPageState extends State<LoginPage> {
                   elevation: 5,
                   child: new Container(
                     padding: EdgeInsets.all(10),
-                    child: new TextField(
+                    child: new TextFormField(
                       decoration: InputDecoration(labelText: "password"),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                      onSaved: (String val) {
+                        loginPassword = val;
+                      },
                     ),
                   ),
                 ),
@@ -69,18 +90,18 @@ class _LoginPageState extends State<LoginPage> {
                       "LOG IN",
                       style: TextStyle(fontSize: 20.0),
                     ),
-                    onPressed: (
+                    onPressed: () {
 
-                        ) {
                       setState(() => this._status = "loading");
-                      appAuth.login().then((result) {
-                        if (result) {
+                      appAuth.login(loginEmail, loginPassword).then((result) {
+                        if (result == 'success') {
                           Navigator.of(context).pushReplacementNamed('/home');
                         } else {
                           setState(() => this._status = 'rejected');
                         }
                       });
-                    },
+
+  }
                   ),
                 ),
               ),
@@ -203,7 +224,6 @@ class _LoginPageState extends State<LoginPage> {
                                                 .validate()) {
                                               _formKey.currentState.save();
                                               var url = 'http://192.168.137.1:5000';
-                                              print("Going");
                                                http.put(url, body: {
                                                 'name': name,
                                                 'surName': surName,
