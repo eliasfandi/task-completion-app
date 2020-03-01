@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../task.dart';
@@ -25,6 +26,7 @@ void updateTasks(String category) {
 }
 
 class TaskPageState extends State<TasksPage> {
+
   Future<String> getData() async {
     http.Response response = await http.get(
       Uri.encodeFull("http://167.172.59.89:5000/tasks"),
@@ -51,6 +53,8 @@ class TaskPageState extends State<TasksPage> {
     }
   }
 
+  String _x = "Apply";
+
   @override
   void initState() {
     this.getData();
@@ -71,9 +75,7 @@ class TaskPageState extends State<TasksPage> {
                       alignment: Alignment.topLeft,
                       child: IconButton(
                         icon: Icon(Icons.graphic_eq),
-                        onPressed: () {
-                          /*...*/
-                        },
+                        /*...*/
                       ),
                     ),
                   ),
@@ -96,13 +98,65 @@ class TaskPageState extends State<TasksPage> {
               ),
               Column(
                 children: tasks.map((task) {
-                  return Card(
-                    margin: EdgeInsets.all(10),
+                  EdgeInsets.only(left: 20.0, right: 20.0);
+                  return RaisedButton(
+                    onPressed: () {
+                      print(task.description);
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                                builder: (context, setState) {
+                              return AlertDialog(
+                                content: Container(
+                                  height: 300,
+                                  width: 350,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: <Widget>[
+                                        Text('Job Title:'),
+                                        Text(task.title),
+                                        Text(''),
+                                        Text('Job Description:'),
+                                        Text(task.description),
+                                        Text(''),
+                                        Text('Job Price:'),
+                                        Text(task.price.toString()),
+                                        Text(''),
+                                        Text('Job Location:'),
+                                        Text(task.location),
+                                        Text(''),
+                                        Text('Estimated Time (in minutes):'),
+                                        Text(task.et.toString()),
+                                        Image.network(
+                                          'http://167.172.59.89:5000/imageUploadTask',
+                                        ),
+                                        Text(''),
+                                        RaisedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _x = "Applied";
+                                            });
+                                          },
+                                          child: new Text(
+                                            _x,
+                                            style:
+                                                TextStyle(color: Colors.blueAccent),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            });
+                          });
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Container(
-                          margin: EdgeInsets.fromLTRB(10, 10, 0, 10),
+                          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -116,7 +170,7 @@ class TaskPageState extends State<TasksPage> {
                                     "${task.title}",
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.blueGrey),
                                   ),
                                 ],
@@ -131,7 +185,7 @@ class TaskPageState extends State<TasksPage> {
                                     "£${task.price}",
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.blueGrey),
                                   ),
                                 ],
@@ -140,7 +194,7 @@ class TaskPageState extends State<TasksPage> {
                           ),
                         ),
                         Container(
-                          margin: EdgeInsets.fromLTRB(0, 20, 40, 20),
+                          margin: EdgeInsets.fromLTRB(0, 20, 5, 20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -154,7 +208,7 @@ class TaskPageState extends State<TasksPage> {
                                     "${task.location}",
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 17,
+                                        fontSize: 15,
                                         color: Colors.blueGrey),
                                   ),
                                 ],
@@ -169,7 +223,7 @@ class TaskPageState extends State<TasksPage> {
                                     "${task.et} min",
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.blueGrey),
                                   ),
                                 ],
@@ -177,11 +231,29 @@ class TaskPageState extends State<TasksPage> {
                             ],
                           ),
                         ),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 1.5,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          child: Image.network(
+                            'http://167.172.59.89:5000/imageUploadTask',
+                          ),
+//                          child: _selectedPicture != null
+//                              ? Image.file(_selectedPicture)
+//                              : Text("No Image Taken", textAlign: TextAlign.center),
+//                          alignment: Alignment.center,
+                        ),
                       ],
                     ),
                   );
                 }).toList(),
-              )
+              ),
             ],
           ),
         ),
