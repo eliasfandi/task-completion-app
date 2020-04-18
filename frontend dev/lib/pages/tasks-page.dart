@@ -1,15 +1,34 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import '../main.dart';
+import 'package:flutter_app/pages/filters.dart' as prefix0;
 import '../task.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:io';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import './filters.dart';
 
 class TasksPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new TaskPageState();
 }
+
+
+//TODO REPORT HERE
+var url =
+    'http://167.172.59.89:5000/reporttask';
+String reason = "Default Reason";
+
+Future<void> reportTask() async {
+
+  http.post(
+    Uri.encodeFull("http://167.172.59.89:5000/reporttask"),
+      body: {
+        'task_id': '1',
+        'reason': reason,
+      }
+  );
+
+}
+
 
 List data;
 List<Task> tasks = [];
@@ -25,8 +44,20 @@ void updateTasks(String category) {
   }
 }
 
-class TaskPageState extends State<TasksPage> {
+GoogleMapController mapController;
 
+final LatLng _center = const LatLng(51.7520, -1.2577);
+
+void _onMapCreated(GoogleMapController controller) {
+  mapController = controller;
+}
+
+class TaskPageState extends State<TasksPage> {
+  String _x;
+   TaskPageState() {
+     _x = "Apply";
+
+}
   Future<String> getData() async {
     http.Response response = await http.get(
       Uri.encodeFull("http://167.172.59.89:5000/tasks"),
@@ -53,11 +84,36 @@ class TaskPageState extends State<TasksPage> {
     }
   }
 
-  String _x = "Apply";
 
   @override
   void initState() {
     this.getData();
+  }
+
+  Future<String> getFilteringTasks() async {
+    http.Response response = await http.get(
+      Uri.encodeFull("http://167.172.59.89:5000/filtering"),
+      headers: {"Accept": "application/json"},
+    );
+    tasks = [];
+    this.setState(() {
+      data = json.decode(response.body);
+    });
+    var counter = 0;
+    while (counter < data.length) {
+      tasks.add(
+        new Task(
+          title: data[counter]["title"],
+          description: data[counter]["description"],
+          category: data[counter]["category"],
+          et: data[counter]["et"],
+          price: data[counter]["price"],
+          location: data[counter]["location"],
+          date: DateTime.now(),
+        ),
+      );
+      counter++;
+    }
   }
 
   Widget build(BuildContext context) {
@@ -74,6 +130,11 @@ class TaskPageState extends State<TasksPage> {
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: IconButton(
+                        onPressed: () {
+                          getFilteringTasks();
+                          Navigator.of(context)
+                              .pushReplacementNamed('/filters');
+                        },
                         icon: Icon(Icons.graphic_eq),
                         /*...*/
                       ),
@@ -109,8 +170,8 @@ class TaskPageState extends State<TasksPage> {
                                 builder: (context, setState) {
                               return AlertDialog(
                                 content: Container(
-                                  height: 300,
-                                  width: 350,
+                                  height: MediaQuery.of(context).size.height,
+                                  width: 400,
                                   child: SingleChildScrollView(
                                     child: Column(
                                       children: <Widget>[
@@ -128,22 +189,42 @@ class TaskPageState extends State<TasksPage> {
                                         Text(''),
                                         Text('Estimated Time (in minutes):'),
                                         Text(task.et.toString()),
+
                                         Image.network(
                                           'http://167.172.59.89:5000/imageUploadTask',
                                         ),
                                         Text(''),
+                                        Container(
+                                          height: 300,
+                                          width: 350,
+                                          child: GoogleMap(
+                                            onMapCreated: _onMapCreated,
+                                            initialCameraPosition:
+                                                CameraPosition(
+                                              target: _center,
+                                              zoom: 13.0,
+                                            ),
+                                          ),
+                                        ),
+                                        FlatButton(
+                                            onPressed: () {
+                                                reportTask();
+                                            },
+                                            child: new Text("Report")),
                                         RaisedButton(
                                           onPressed: () {
+                                            reportTask();
                                             setState(() {
-                                              _x = "Applied";
+                                               _x = "Applied";
                                             });
                                           },
                                           child: new Text(
                                             _x,
-                                            style:
-                                                TextStyle(color: Colors.blueAccent),
+                                            style: TextStyle(
+                                                color: Colors.blueAccent),
                                           ),
-                                        )
+                                        ),
+
                                       ],
                                     ),
                                   ),
@@ -163,8 +244,9 @@ class TaskPageState extends State<TasksPage> {
                               Row(
                                 children: <Widget>[
                                   IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.title),
+                                    onPressed: null,
+                                    icon:
+                                        Icon(Icons.title, color: Colors.black),
                                   ),
                                   Text(
                                     "${task.title}",
@@ -178,8 +260,9 @@ class TaskPageState extends State<TasksPage> {
                               Row(
                                 children: <Widget>[
                                   IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.attach_money),
+                                    onPressed: null,
+                                    icon: Icon(Icons.attach_money,
+                                        color: Colors.black),
                                   ),
                                   Text(
                                     "£${task.price}",
@@ -201,8 +284,9 @@ class TaskPageState extends State<TasksPage> {
                               Row(
                                 children: <Widget>[
                                   IconButton(
-                                    icon: Icon(Icons.location_on),
-                                    onPressed: () {},
+                                    icon: Icon(Icons.location_on,
+                                        color: Colors.black),
+                                    onPressed: null,
                                   ),
                                   Text(
                                     "${task.location}",
@@ -216,8 +300,11 @@ class TaskPageState extends State<TasksPage> {
                               Row(
                                 children: <Widget>[
                                   IconButton(
-                                    icon: Icon(Icons.access_time),
-                                    onPressed: () {},
+                                    icon: Icon(
+                                      Icons.access_time,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: null,
                                   ),
                                   Text(
                                     "${task.et} min",
